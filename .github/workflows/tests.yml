@@ -29,13 +29,10 @@ jobs:
 
     - name: Create .env for tests
       run: |
-        cat > .env << 'EOF'
-CBT_BOT_TOKEN=test_token_123
-MAX_BOT_TOKEN=test_token_456
-ADMIN_TG_ID=12345
-MAX_BOT_ADMIN_ID=67890
-EOF
+        echo "CBT_BOT_TOKEN=test_token_123" > .env
+        echo "MAX_BOT_TOKEN=test_token_456" >> .env
+        echo "ADMIN_TG_ID=12345" >> .env
+        echo "MAX_BOT_ADMIN_ID=67890" >> .env
 
     - name: Run tests
-      run: |
-        python -m pytest tests/ -v --tb=short
+      run: python -m pytest tests/ -v --tb=short
