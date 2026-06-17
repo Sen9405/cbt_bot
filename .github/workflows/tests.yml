@@ -29,7 +29,12 @@ jobs:
 
     - name: Create .env for tests
       run: |
-        cp .env.example .env
+        cat > .env << 'EOF'
+CBT_BOT_TOKEN=test_token_123
+MAX_BOT_TOKEN=test_token_456
+ADMIN_TG_ID=12345
+MAX_BOT_ADMIN_ID=67890
+EOF
 
     - name: Run tests
       run: |
