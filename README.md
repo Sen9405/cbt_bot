@@ -1,5 +1,7 @@
 # 🧠 CBT-бот (КПТ-терапия)
 
+[![Tests](https://github.com/Sen9405/cbt_bot/workflows/Tests/badge.svg)](https://github.com/Sen9405/cbt_bot/actions)
+
 Telegram-бот для ведения дневника когнитивно-поведенческой терапии.
 
 ## Возможности
