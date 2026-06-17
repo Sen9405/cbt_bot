@@ -1,0 +1,23 @@
+# Не коммитим .env с токенами
+.env
+
+# База данных с данными пользователей
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Кеш Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Systemd сервисы (локальные пути)
+*.service
+
+# Логи
+*.log
+
+# Архивы
+*.tar.gz
+*.zip
