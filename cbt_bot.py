@@ -234,6 +234,15 @@ def achievements_keyboard():
     return markup
 
 
+def confirm_delete_all_keyboard():
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    markup.add(
+        types.KeyboardButton("✅ Да, удалить всё"),
+        types.KeyboardButton("❌ Нет, отменить"),
+    )
+    return markup
+
+
 def achievement_fill_keyboard():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(
@@ -2269,12 +2278,12 @@ def create_bot(token):
         is_del_all = txt == "🗑 Удалить все"
         
         if is_del_all:
-            conn = sqlite3.connect(DB_FILE)
-            c = conn.cursor()
-            c.execute('DELETE FROM achievements WHERE user_id = ?', (uid,))
-            conn.commit()
-            conn.close()
-            bot.send_message(uid, "✅ Все достижения удалены!", reply_markup=achievements_keyboard())
+            user_states[uid] = {'state': 'ach_confirm_del_all'}
+            bot.send_message(
+                uid,
+                "⚠️ **Точно удалить все достижения?**\n\nЭто действие нельзя отменить.",
+                reply_markup=confirm_delete_all_keyboard()
+            )
             return
         
         items = get_user_achievements(uid)
@@ -2344,13 +2353,34 @@ def create_bot(token):
     @bot.message_handler(func=lambda m: m.text == "🗑 Удалить все" and user_states.get(m.from_user.id, {}).get('state', '').startswith('ach_'))
     def ach_del_all_from_state_handler(message):
         uid = message.from_user.id
-        conn = sqlite3.connect(DB_FILE)
-        c = conn.cursor()
-        c.execute('DELETE FROM achievements WHERE user_id = ?', (uid,))
-        conn.commit()
-        conn.close()
-        user_states[uid] = {}
-        bot.send_message(uid, "✅ Все достижения удалены!", reply_markup=achievements_keyboard())
+        user_states[uid] = {'state': 'ach_confirm_del_all'}
+        bot.send_message(
+            uid,
+            "⚠️ **Точно удалить все достижения?**\n\nЭто действие нельзя отменить.",
+            reply_markup=confirm_delete_all_keyboard()
+        )
+    
+    @bot.message_handler(func=lambda m: user_states.get(m.from_user.id, {}).get('state') == 'ach_confirm_del_all')
+    def ach_confirm_del_all_handler(message):
+        uid = message.from_user.id
+        text = message.text.strip()
+        if text == "✅ Да, удалить всё":
+            conn = sqlite3.connect(DB_FILE)
+            c = conn.cursor()
+            c.execute('DELETE FROM achievements WHERE user_id = ?', (uid,))
+            conn.commit()
+            conn.close()
+            user_states[uid] = {}
+            bot.send_message(uid, "✅ Все достижения удалены!", reply_markup=achievements_keyboard())
+        elif text == "❌ Нет, отменить":
+            user_states[uid] = {}
+            bot.send_message(uid, "❌ Отменено.", reply_markup=achievements_keyboard())
+        else:
+            bot.send_message(
+                uid,
+                "⚠️ **Точно удалить все достижения?**\n\nЭто действие нельзя отменить.",
+                reply_markup=confirm_delete_all_keyboard()
+            )
     
     @bot.message_handler(func=lambda m: user_states.get(m.from_user.id, {}).get('state') == 'ach_editing_choose')
     def ach_edit_choose_handler(message):

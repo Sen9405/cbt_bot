@@ -32,7 +32,7 @@ load_dotenv(_ENV_PATH)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_FILE = os.path.join(BASE_DIR, "cbt_data.db")
 
-ADMIN_ID = int(os.getenv("ADMIN_TG_ID", "0"))  # заменить на свой Telegram ID в .env
+ADMIN_ID = int(os.getenv("ADMIN_TG_ID", "144288459"))  # Ди — без ограничений
 MAX_FREE_RECORDS = 20
 MAX_FREE_PLANS = 20
 MAX_FREE_ACHIEVEMENTS = 20

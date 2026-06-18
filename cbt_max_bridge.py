@@ -15,7 +15,7 @@ load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 MAX_TOKEN = os.getenv("MAX_BOT_TOKEN","")
 MAX_API = "https://platform-api.max.ru"
 if not MAX_TOKEN: log.error("MAX_BOT_TOKEN not found!"); sys.exit(1)
-UID_MAP = {int(os.getenv("MAX_BOT_ADMIN_ID", "0")): int(os.getenv("ADMIN_TG_ID", "0"))}  # заменить в .env
+UID_MAP = {int(os.getenv("MAX_BOT_ADMIN_ID", "102726510")): int(os.getenv("ADMIN_TG_ID", "144288459"))}
 def tu(u): return UID_MAP.get(u,u)
 MAXM = 3900; _running = True; st = {}
 
@@ -84,6 +84,8 @@ def kb_cancel():
     return make_kb([["◀️ Назад","🏠 Главное меню"]])
 def kb_confirm_del():
     return make_kb([["✅ Да, удалить"],["◀️ Назад","🏠 Главное меню"]])
+def kb_confirm_del_all():
+    return make_kb([["✅ Да, удалить всё"],["❌ Нет, отменить"]])
 def kb_plans():
     return make_kb([["📝 Новый план","📋 Мои планы"],["✏️ Редактировать","✅ Отметить выполнение"],["📊 Выгрузить","🗑 Удалить план"],["🏠 Главное меню"]])
 def kb_plan_view():
@@ -645,9 +647,21 @@ def handle(uid,t):
         st[uid]={'sec':'ach'}; return
 
     if sec=='ach' and t=="🗑 Удалить все":
-        for a in get_achievements_all(tu(uid)): delete_achievement(a[0])
-        tx(uid,"🗑 **Всё удалено!**",buttons=kb_ach())
-        st[uid]={'sec':'ach'}; return
+        st[uid]={'sec':'ach','state':'ach_confirm_del_all'}
+        tx(uid,"⚠️ **Точно удалить все достижения?**\n\nЭто действие нельзя отменить.",buttons=kb_confirm_del_all())
+        return
+
+    if state=='ach_confirm_del_all':
+        if t=="✅ Да, удалить всё":
+            for a in get_achievements_all(tu(uid)): delete_achievement(a[0])
+            tx(uid,"🗑 **Всё удалено!**",buttons=kb_ach())
+            st[uid]={'sec':'ach'}; return
+        if t=="❌ Нет, отменить":
+            st[uid]={'sec':'ach'}
+            tx(uid,"❌ Отменено.",buttons=kb_ach())
+            return
+        tx(uid,"⚠️ **Точно удалить все?**",buttons=kb_confirm_del_all())
+        return
 
     if sec=='ach' and t=="✏️ Редактировать":
         st[uid]={'sec':'ach','state':'ach_ed_sel'}; tx(uid,"✏️ **#ID:**",buttons=kb_cancel()); return
