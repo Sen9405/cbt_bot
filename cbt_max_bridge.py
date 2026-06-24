@@ -25,7 +25,7 @@ class _SSLAdapter(HTTPAdapter):
     def init_poolmanager(self, *args, **kwargs):
         kwargs['ssl_context'] = _ctx
         return super().init_poolmanager(*args, **kwargs)
-_SESSION = _requests.Session()
+_SESSION = requests.Session()
 _SESSION.mount('https://', _SSLAdapter())
 if not MAX_TOKEN: log.error("MAX_BOT_TOKEN not found!"); sys.exit(1)
 UID_MAP = {int(os.getenv("MAX_BOT_ADMIN_ID", "102726510")): int(os.getenv("ADMIN_TG_ID", "144288459"))}
@@ -786,7 +786,14 @@ def poll():
 def main():
     signal.signal(signal.SIGTERM, lambda *a: setattr(sys.modules[__name__], '_running', False))
     signal.signal(signal.SIGINT, lambda *a: setattr(sys.modules[__name__], '_running', False))
-    log.info("Starting MAX bridge...")
+    log.info("🚀 CBT-MAX Bridge запущен")
+    log.info(f"   MAX API: {MAX_API}")
+    log.info(f"   DB: {DB_FILE}")
+    me = api("/me")
+    if me:
+        log.info(f"✅ Бот авторизован: {me.get('name', '?')} (@{me.get('username', '?')})")
+    else:
+        log.error("❌ Не удалось подключиться к MAX")
     poll()
     log.info("Stopped.")
 
