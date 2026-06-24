@@ -246,8 +246,12 @@ class TestDailyPlans:
         assert has_items is True
 
     def test_get_user_plans(self, core_module, test_user):
-        core_module.get_or_create_plan(test_user, "2026-06-15")
-        core_module.get_or_create_plan(test_user, "2026-06-17")
+        from datetime import date, timedelta
+        today = date.today()
+        d1 = (today - timedelta(days=2)).isoformat()  # 2 дня назад
+        d2 = (today - timedelta(days=1)).isoformat()  # 1 день назад
+        core_module.get_or_create_plan(test_user, d1)
+        core_module.get_or_create_plan(test_user, d2)
         plans = core_module.get_user_plans(test_user, days=7)
         assert len(plans) >= 2
 
