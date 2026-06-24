@@ -13,7 +13,20 @@ from cbt_core import *
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 MAX_TOKEN = os.getenv("MAX_BOT_TOKEN","")
-MAX_API = "https://platform-api.max.ru"
+MAX_API = "https://platform-api2.max.ru"
+
+# Кастомный SSL контекст для сертификата Минцифры
+import ssl
+from urllib3.poolmanager import PoolManager
+from requests.adapters import HTTPAdapter
+_CA_BUNDLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'max_ca_chain.pem')
+_ctx = ssl.create_default_context(cafile=_CA_BUNDLE)
+class _SSLAdapter(HTTPAdapter):
+    def init_poolmanager(self, *args, **kwargs):
+        kwargs['ssl_context'] = _ctx
+        return super().init_poolmanager(*args, **kwargs)
+_SESSION = _requests.Session()
+_SESSION.mount('https://', _SSLAdapter())
 if not MAX_TOKEN: log.error("MAX_BOT_TOKEN not found!"); sys.exit(1)
 UID_MAP = {int(os.getenv("MAX_BOT_ADMIN_ID", "102726510")): int(os.getenv("ADMIN_TG_ID", "144288459"))}
 def tu(u): return UID_MAP.get(u,u)
@@ -21,7 +34,11 @@ MAXM = 3900; _running = True; st = {}
 
 def api(p,method="GET",data=None,params=None):
     h = {"Authorization":MAX_TOKEN,"Content-Type":"application/json"}
-    r = requests.request(method,f"{MAX_API}{p}",headers=h,json=data,params=params,timeout=35)
+    url = f"{MAX_API}{p}"
+    if method == "GET":
+        r = _SESSION.get(url, headers=h, params=params, timeout=35)
+    else:
+        r = _SESSION.post(url, headers=h, json=data, params=params, timeout=35)
     if r.status_code in (200,201):
         return r.json()
     log.warning(f"API {p} -> {r.status_code}: {r.text[:200]}")
